@@ -1,4 +1,4 @@
-name: Claude Code Warmup
+name: Aquecimento do Claude Code
 
 on:
   schedule:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch: {}
 
 concurrency:
-  group: claude-warmup
+  group: Aquecimento Claude
   cancel-in-progress: true
 
 jobs:
@@ -14,22 +14,23 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
-      - name: Validate configuration
+      - name: Validar configuracao
         env:
-          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
+          CLAUDE_OAUTH_TOKEN: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
         run: |
-          if [ -z "${CLAUDE_CODE_OAUTH_TOKEN}" ]; then
-            echo "CLAUDE_OAUTH_TOKEN secret is not set."
-            echo "Add it in Settings > Secrets and variables > Actions."
+          if [ -z "$CLAUDE_OAUTH_TOKEN" ]; then
+            echo "Segredo CLAUDE_OAUTH_TOKEN nao esta definido."
+            echo "Adicione em Configurações > Segredos e variáveis > Ações."
             exit 1
           fi
 
-      - name: Install Claude Code
+      - name: Instalar o Codigo Claude
         run: npm install -g @anthropic-ai/claude-code
 
-      - name: Ping Claude to anchor 5-hour window
+      - name: Ping Claude para a janela de 5 horas de ancoragem
         env:
-          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
+          CLAUDE_OAUTH_TOKEN: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
         run: |
           mkdir -p ~/.claude
           echo '{"hasCompletedOnboarding":true}' > ~/.claude.json
@@ -41,22 +42,22 @@ jobs:
           cat "$output_file"
 
           if [ $status -eq 0 ]; then
-            echo "Claude warmup request succeeded."
-            echo "✓ Warmup complete"
+            echo "Pedido de aquecimento do Claude bem-sucedido."
+            echo "✓ Aquecimento completo"
             exit 0
           fi
 
-          if grep -Eiq "expired|unauthorized|invalid token|authentication|auth failed|login required|not logged in" "$output_file"; then
-            echo "Claude token appears invalid or expired."
-            echo "Run 'claude setup-token' locally and update the CLAUDE_OAUTH_TOKEN GitHub secret."
+          if grep -Eiq "expired|unauthorized|valid token|authentication|auth failed|login required" "$output_file"; then
+            echo "O token Claude aparece invalido ou expirado."
+            echo "Execute 'claude setup-token' localmente e atualize o segredo CLAUDE_OAUTH_TOKEN no GitHub."
             exit 1
           fi
 
           if grep -qi "rate limit" "$output_file"; then
-            echo "Claude reported a rate limit; treating as warmup success."
-            echo "✓ Warmup complete"
+            echo "Claude relatou um limite de taxa; tratando como sucesso no aquecimento."
+            echo "✓ Aquecimento completo"
             exit 0
           fi
 
-          echo "Claude warmup failed with an unexpected error."
+          echo "Claude no aquecimento falhou com um erro inesperado."
           exit $status
