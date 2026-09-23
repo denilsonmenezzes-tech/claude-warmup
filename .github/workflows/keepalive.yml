@@ -19,15 +19,11 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Tenta pelo nome de exibição
+          echo "=== Tentando reativar ==="
           gh workflow enable "Aquecimento do Claude Code" || true
-          
-          # Tenta pelos nomes de arquivo mais comuns
           gh workflow enable "warmup.yml" || true
           gh workflow enable "claude-warmup.yml" || true
           gh workflow enable "aquecimento.yml" || true
-          gh workflow enable "claude.yml" || true
           
-          # Lista todos os workflows para ver os nomes reais
-          echo "=== Workflows disponíveis ==="
+          echo "=== Lista de workflows ==="
           gh workflow list
