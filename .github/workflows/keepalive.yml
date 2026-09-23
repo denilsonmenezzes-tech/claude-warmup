@@ -2,7 +2,7 @@ name: Keepalive
 
 on:
   schedule:
-    - cron: '0 0 1 * *'   # Todo dia 1 do mês
+    - cron: '0 0 1 * *'
   workflow_dispatch:
 
 jobs:
@@ -19,4 +19,15 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh workflow enable "Aquecimento do Claude Code"
+          # Tenta pelo nome de exibição
+          gh workflow enable "Aquecimento do Claude Code" || true
+          
+          # Tenta pelos nomes de arquivo mais comuns
+          gh workflow enable "warmup.yml" || true
+          gh workflow enable "claude-warmup.yml" || true
+          gh workflow enable "aquecimento.yml" || true
+          gh workflow enable "claude.yml" || true
+          
+          # Lista todos os workflows para ver os nomes reais
+          echo "=== Workflows disponíveis ==="
+          gh workflow list
